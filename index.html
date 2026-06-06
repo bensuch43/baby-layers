@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#dff0ff">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Baby Layers">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Baby Layers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #1c2b3a;
+    --muted: #7a92a8;
+    --accent: #e47a50;
+    --white55: rgba(255,255,255,0.55);
+    --white65: rgba(255,255,255,0.65);
+    --blue-border: rgba(190,215,245,0.5);
+    --blue-light: rgba(210,232,255,0.45);
+    --blue-light-border: rgba(170,210,255,0.38);
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  html { height: 100%; }
+
+  body {
+    height: 100%;
+    font-family: 'DM Sans', sans-serif;
+    background: linear-gradient(135deg, #c8deff 0%, #dff0ff 50%, #fde8d8 100%);
+    background-attachment: fixed;
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── Tab bar ────────────────────────────────── */
+  .tab-bar {
+    display: flex;
+    background: rgba(255,255,255,0.94);
+    border-top: 1px solid rgba(190,215,245,0.4);
+    padding-bottom: var(--safe-bottom);
+    flex-shrink: 0;
+    order: 2;
+  }
+  .tab-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 10px 0 6px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .tab-icon { font-size: 22px; line-height: 1; }
+  .tab-label {
+    font-size: 11px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--muted);
+    font-weight: 400;
+    transition: color 0.2s, font-weight 0.2s;
+  }
+  .tab-btn.active .tab-label { color: var(--ink); font-weight: 600; }
+  .tab-btn.active .tab-icon { opacity: 1; }
+  .tab-btn:not(.active) .tab-icon { opacity: 0.35; }
+
+  /* ── Screens ────────────────────────────────── */
+  .screens {
+    flex: 1;
+    overflow: hidden;
+    order: 1;
+    position: relative;
+  }
+  .screen {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: calc(var(--safe-top) + 24px) 20px 24px;
+    display: none;
+  }
+  .screen.active { display: block; }
+
+  /* ── Typography ─────────────────────────────── */
+  .eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  h1 {
+    font-family: 'Lora', serif;
+    font-size: 34px;
+    font-weight: 400;
+    line-height: 1.15;
+    color: var(--ink);
+    margin-bottom: 24px;
+  }
+  h1 em { font-style: italic; }
+
+  /* ── Big temp display ───────────────────────── */
+  .temp-display {
+    text-align: center;
+    margin-bottom: 22px;
+    line-height: 1;
+  }
+  .temp-number {
+    font-family: 'Lora', serif;
+    font-size: 88px;
+    font-weight: 600;
+    transition: color 0.3s;
+  }
+  .temp-unit {
+    font-family: 'Lora', serif;
+    font-size: 28px;
+    font-weight: 400;
+    opacity: 0.55;
+    vertical-align: super;
+    margin-left: 3px;
+  }
+
+  /* ── Toggle ─────────────────────────────────── */
+  .toggle-wrap {
+    display: flex;
+    background: var(--white55);
+    border: 1px solid var(--blue-border);
+    border-radius: 14px;
+    padding: 4px;
+    gap: 4px;
+    margin-bottom: 22px;
+  }
+  .toggle-btn {
+    flex: 1;
+    padding: 10px 0;
+    border-radius: 11px;
+    border: none;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .toggle-btn.active {
+    background: var(--ink);
+    color: white;
+  }
+
+  /* ── Slider ─────────────────────────────────── */
+  .slider-wrap {
+    background: var(--white55);
+    border: 1px solid var(--blue-border);
+    border-radius: 16px;
+    padding: 16px 18px;
+    margin-bottom: 20px;
+  }
+  .slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  input[type=range] {
+    width: 100%;
+    height: 6px;
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+    cursor: pointer;
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 26px; height: 26px;
+    border-radius: 50%; border: none;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  }
+
+  /* ── Layer count panel ──────────────────────── */
+  .layer-panel {
+    border-radius: 20px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+    border: 1.5px solid transparent;
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .layer-num {
+    font-family: 'Lora', serif;
+    font-size: 54px;
+    font-weight: 600;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: color 0.3s;
+  }
+  .layer-lbl strong { display: block; font-size: 15px; font-weight: 600; color: var(--ink); }
+  .layer-lbl span { font-size: 12px; color: var(--muted); }
+
+  /* ── Item rows ──────────────────────────────── */
+  .items-list { display: flex; flex-direction: column; gap: 7px; margin-bottom: 12px; }
+  .item-row {
+    display: flex; align-items: center; gap: 12px;
+    background: rgba(255,255,255,0.65);
+    border: 1px solid rgba(190,215,245,0.45);
+    border-radius: 13px;
+    padding: 11px 14px;
+    animation: fadeUp 0.3s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .item-emoji { font-size: 22px; flex-shrink: 0; }
+  .item-name { font-size: 14px; font-weight: 500; color: var(--ink); }
+  .item-desc { font-size: 12px; color: var(--muted); }
+
+  /* ── Tip box ────────────────────────────────── */
+  .tip-box {
+    background: var(--blue-light);
+    border: 1px solid var(--blue-light-border);
+    border-radius: 13px;
+    padding: 13px 15px;
+    font-size: 13px;
+    color: #5a7a90;
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+
+  /* ── Neck check ─────────────────────────────── */
+  .neck-check {
+    background: rgba(228,122,80,0.06);
+    border: 1px solid rgba(228,122,80,0.18);
+    border-radius: 13px;
+    padding: 13px 15px;
+    font-size: 13px;
+    color: var(--ink);
+    display: flex;
+    gap: 10px;
+    line-height: 1.55;
+    margin-bottom: 14px;
+  }
+  .neck-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── Status panel (indoor) ──────────────────── */
+  .status-panel {
+    border-radius: 20px;
+    padding: 18px 20px;
+    border: 1.5px solid transparent;
+    margin-bottom: 14px;
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .status-top {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 8px;
+  }
+  .status-icon { font-size: 32px; flex-shrink: 0; }
+  .status-title { font-size: 16px; font-weight: 600; color: var(--ink); }
+  .status-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .status-body { font-size: 13px; color: #5a7a90; line-height: 1.6; }
+
+  /* ── Tog guide ──────────────────────────────── */
+  .tog-wrap {
+    background: var(--white55);
+    border: 1px solid rgba(190,215,245,0.45);
+    border-radius: 16px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+  }
+  .tog-title {
+    font-size: 10px; font-weight: 500; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 10px;
+  }
+  .tog-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(190,215,245,0.3);
+  }
+  .tog-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .tog-badge {
+    min-width: 44px; padding: 3px 8px;
+    border-radius: 8px; text-align: center;
+    font-size: 13px; font-weight: 700;
+    background: rgba(190,215,245,0.2);
+    color: var(--muted);
+    transition: background 0.3s, color 0.3s;
+    flex-shrink: 0;
+  }
+  .tog-badge.active { color: white; }
+  .tog-label { flex: 1; font-size: 13px; color: var(--muted); transition: color 0.3s, font-weight 0.2s; }
+  .tog-label.active { color: var(--ink); font-weight: 500; }
+  .tog-check { font-size: 13px; }
+
+  .screen-footer {
+    font-size: 11px; color: var(--muted); text-align: center; margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── SCREENS ──────────────────────────────────────── -->
+<div class="screens">
+
+  <!-- OUTDOOR -->
+  <div class="screen active" id="screen-outdoor">
+    <p class="eyebrow">Baby care</p>
+    <h1>How many <em id="out-heading-em">layers</em><br>today?</h1>
+
+    <!-- Pram / Babywearing -->
+    <div class="toggle-wrap">
+      <button class="toggle-btn active" id="btn-pram" onclick="setMode('pram')">🛷 Pram</button>
+      <button class="toggle-btn" id="btn-wear" onclick="setMode('babywearing')">🫶 Babywearing</button>
+    </div>
+
+    <!-- Temp -->
+    <div class="temp-display">
+      <span class="temp-number" id="out-temp-num">12</span><span class="temp-unit" id="out-temp-unit">°C</span>
+    </div>
+
+    <!-- Slider -->
+    <div class="slider-wrap">
+      <div class="slider-labels"><span>−10°C</span><span>Outside temperature</span><span>35°C</span></div>
+      <input type="range" id="out-slider" min="-10" max="35" value="12" oninput="updateOutdoor()">
+    </div>
+
+    <!-- Layer panel -->
+    <div class="layer-panel" id="out-layer-panel">
+      <div class="layer-num" id="out-layer-num"></div>
+      <div class="layer-lbl">
+        <strong id="out-layer-label"></strong>
+        <span>layers recommended</span>
+      </div>
+    </div>
+
+    <div class="items-list" id="out-items"></div>
+
+    <div class="tip-box" id="out-tip"></div>
+
+    <div class="neck-check">
+      <span class="neck-icon">🤚</span>
+      <div><strong>Quick check:</strong> Feel the back of baby's neck — it should be warm, not hot or clammy. Adjust one layer at a time.</div>
+    </div>
+
+    <p class="screen-footer">Based on NHS safe dressing guidelines</p>
+  </div>
+
+  <!-- INDOOR -->
+  <div class="screen" id="screen-indoor">
+    <p class="eyebrow">Baby care</p>
+    <h1>Is the room the right <em id="in-heading-em">temperature?</em></h1>
+
+    <!-- Temp -->
+    <div class="temp-display">
+      <span class="temp-number" id="in-temp-num">18</span><span class="temp-unit" id="in-temp-unit">°C</span>
+    </div>
+
+    <!-- Slider -->
+    <div class="slider-wrap">
+      <div class="slider-labels"><span>10°C</span><span>Room temperature</span><span>30°C</span></div>
+      <input type="range" id="in-slider" min="10" max="30" value="18" oninput="updateIndoor()">
+    </div>
+
+    <!-- Status panel -->
+    <div class="status-panel" id="in-status">
+      <div class="status-top">
+        <span class="status-icon" id="in-icon"></span>
+        <div>
+          <div class="status-title" id="in-title"></div>
+          <div class="status-sub" id="in-sub"></div>
+        </div>
+      </div>
+      <div class="status-body" id="in-body"></div>
+    </div>
+
+    <!-- Tog guide -->
+    <div class="tog-wrap">
+      <div class="tog-title">🌙 Sleeping bag tog guide</div>
+      <div class="tog-row">
+        <div class="tog-badge" id="tog-1">0.5</div>
+        <div class="tog-label" id="tog-label-1">24–27°C — nappy + vest only</div>
+        <span class="tog-check" id="tog-check-1"></span>
+      </div>
+      <div class="tog-row">
+        <div class="tog-badge" id="tog-2">1.0</div>
+        <div class="tog-label" id="tog-label-2">21–23°C — warm room</div>
+        <span class="tog-check" id="tog-check-2"></span>
+      </div>
+      <div class="tog-row">
+        <div class="tog-badge" id="tog-3">2.5</div>
+        <div class="tog-label" id="tog-label-3">16–20°C — ideal range</div>
+        <span class="tog-check" id="tog-check-3"></span>
+      </div>
+      <div class="tog-row">
+        <div class="tog-badge" id="tog-4">3.5</div>
+        <div class="tog-label" id="tog-label-4">below 16°C — cold room</div>
+        <span class="tog-check" id="tog-check-4"></span>
+      </div>
+    </div>
+
+    <div class="neck-check">
+      <span class="neck-icon">🤚</span>
+      <div><strong>Quick check:</strong> Feel the back of baby's neck or chest — warm, not hot or clammy. Never use a duvet, pillow or loose blankets.</div>
+    </div>
+
+    <p class="screen-footer">Based on NHS &amp; Lullaby Trust safe sleep guidelines</p>
+  </div>
+
+</div>
+
+<!-- ── TAB BAR ──────────────────────────────────────── -->
+<nav class="tab-bar">
+  <button class="tab-btn active" id="tab-outdoor" onclick="switchTab('outdoor')">
+    <span class="tab-icon">🌤️</span>
+    <span class="tab-label">Outdoor</span>
+  </button>
+  <button class="tab-btn" id="tab-indoor" onclick="switchTab('indoor')">
+    <span class="tab-icon">🏠</span>
+    <span class="tab-label">Indoor</span>
+  </button>
+</nav>
+
+<script>
+// ── State ────────────────────────────────────────────
+let outdoorMode = 'pram';
+
+// ── Tab switching ────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + tab).classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+}
+
+// ── Mode toggle ──────────────────────────────────────
+function setMode(mode) {
+  outdoorMode = mode;
+  document.getElementById('btn-pram').classList.toggle('active', mode === 'pram');
+  document.getElementById('btn-wear').classList.toggle('active', mode === 'babywearing');
+  updateOutdoor();
+}
+
+// ── Slider track colour ───────────────────────────────
+function setSliderColor(slider, color) {
+  const min = +slider.min, max = +slider.max, val = +slider.value;
+  const pct = ((val - min) / (max - min)) * 100;
+  slider.style.background = `linear-gradient(to right, ${color} ${pct}%, rgba(190,215,245,0.4) ${pct}%)`;
+}
+
+// ── Outdoor logic ────────────────────────────────────
+function getOutdoorRec(temp, mode) {
+  const eff = mode === 'babywearing' ? temp + 2 : temp;
+  const wNote = mode === 'babywearing' ? ' Baby shares your body heat — one fewer layer than you might expect.' : '';
+
+  if (eff >= 24) return { layers:1, label:'Just a bodysuit',
+    color:'#e47a50', bg:'rgba(255,237,226,0.75)', border:'rgba(228,122,80,0.25)',
+    tip:`At ${temp}°C it's warm — babies overheat easily. One light layer is plenty.${wNote}`,
+    items:[{e:'👕',n:'Short-sleeve bodysuit',d:'Light cotton, fits snugly'}] };
+
+  if (eff >= 18) return { layers:2, label:'Bodysuit + light layer',
+    color:'#d4a017', bg:'rgba(255,248,220,0.75)', border:'rgba(212,160,23,0.25)',
+    tip:`At ${temp}°C it's mild. A bodysuit plus one light layer keeps baby comfortable.${wNote}`,
+    items:[{e:'👕',n:'Short-sleeve bodysuit',d:'Base layer, close to skin'},{e:'🧥',n:'Light sleepsuit or cardigan',d:'Thin cotton or jersey'}] };
+
+  if (eff >= 12) return { layers:3, label:'Bodysuit + outfit + jacket',
+    color:'#2ecc71', bg:'rgba(220,255,235,0.75)', border:'rgba(46,204,113,0.25)',
+    tip:`At ${temp}°C baby needs a mid layer. A hat is a good idea outdoors.${wNote}`,
+    items:[{e:'👕',n:'Long-sleeve bodysuit',d:'Warm base layer'},{e:'👖',n:'Fleece sleepsuit or outfit',d:'Mid-weight layer'},{e:'🧥',n:'Light jacket or snowsuit',d:'Cotton or light fleece'}] };
+
+  if (eff >= 4) return { layers:4, label:'Full cold-weather bundle',
+    color:'#3498db', bg:'rgba(220,235,255,0.75)', border:'rgba(52,152,219,0.25)',
+    tip:`At ${temp}°C it's cold. Always add a hat — babies lose a lot of heat from their head.${wNote}`,
+    items:[{e:'👕',n:'Long-sleeve vest/bodysuit',d:'Thermal base layer'},{e:'👖',n:'Fleece sleepsuit',d:'Warm mid layer'},{e:'🧥',n:'Padded coat or pram suit',d:'Wind & water resistant'},{e:'🧢',n:'Warm hat + mittens',d:'Essential — babies lose heat fast'}] };
+
+  return { layers:5, label:"Maximum layers — it's freezing",
+    color:'#2980b9', bg:'rgba(210,228,255,0.75)', border:'rgba(41,128,185,0.25)',
+    tip:`At ${temp}°C limit time outdoors.${mode==='pram' ? ' Use a footmuff.' : ' Keep outings short.'}${wNote}`,
+    items:[{e:'👕',n:'Thermal long-sleeve vest',d:'Close-fitting base layer'},{e:'👖',n:'Fleece sleepsuit',d:'Warm mid layer'},{e:'🧥',n:'Padded snowsuit',d:'Full-body insulation'},{e:'🧢',n:'Warm hat + mittens',d:'Cover head and hands'},mode==='pram'?{e:'🛷',n:'Pram footmuff or blanket',d:'Extra insulation in pram'}:{e:'🧣',n:'Extra blanket if needed',d:'Over the carrier if very cold'}] };
+}
+
+function updateOutdoor() {
+  const temp = +document.getElementById('out-slider').value;
+  const rec  = getOutdoorRec(temp, outdoorMode);
+
+  document.getElementById('out-temp-num').textContent  = temp;
+  document.getElementById('out-temp-num').style.color  = rec.color;
+  document.getElementById('out-temp-unit').style.color = rec.color;
+  document.getElementById('out-heading-em').style.color = rec.color;
+
+  setSliderColor(document.getElementById('out-slider'), rec.color);
+
+  const panel = document.getElementById('out-layer-panel');
+  panel.style.background   = rec.bg;
+  panel.style.borderColor  = rec.border;
+  document.getElementById('out-layer-num').textContent   = rec.layers;
+  document.getElementById('out-layer-num').style.color   = rec.color;
+  document.getElementById('out-layer-label').textContent = rec.label;
+
+  document.getElementById('out-items').innerHTML = rec.items.map(i => `
+    <div class="item-row">
+      <span class="item-emoji">${i.e}</span>
+      <div>
+        <div class="item-name">${i.n}</div>
+        <div class="item-desc">${i.d}</div>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('out-tip').innerHTML = `<strong style="color:var(--ink)">💡 Why? </strong>${rec.tip}`;
+}
+
+// ── Indoor logic ─────────────────────────────────────
+const TOG_COLORS = { 1:'#e47a50', 2:'#d4a017', 3:'#2ecc71', 4:'#3498db' };
+
+function getIndoorZone(temp) {
+  if (temp > 27) return { color:'#c0392b', bg:'rgba(255,220,220,0.75)', border:'rgba(192,57,43,0.25)', icon:'🥵', title:'Too hot', sub:'Above 27°C — action needed', body:'Too warm for safe sleep. Open a window, use a fan pointed away from baby, and dress in just a nappy. Overheating is a SIDS risk factor.', togId:null };
+  if (temp >= 24) return { color:'#e47a50', bg:'rgba(255,237,226,0.75)', border:'rgba(228,122,80,0.25)', icon:'☀️', title:'Very warm', sub:'24–27°C — dress very lightly', body:'Dress baby in just a nappy and short-sleeve vest. Use a 0.5 tog sleeping bag.', togId:1 };
+  if (temp >= 21) return { color:'#d4a017', bg:'rgba(255,248,220,0.75)', border:'rgba(212,160,23,0.25)', icon:'🌤️', title:'Warm', sub:'21–23°C — light layers', body:'Dress baby in a short-sleeve vest. Use a 1.0 tog sleeping bag. No additional blankets needed.', togId:2 };
+  if (temp >= 16) return { color:'#2ecc71', bg:'rgba(220,255,235,0.75)', border:'rgba(46,204,113,0.25)', icon:'✅', title:'Ideal temperature', sub:'16–20°C — perfect for sleep', body:'Dress baby in a long-sleeve vest and sleepsuit. Use a 2.5 tog sleeping bag. No blankets needed.', togId:3 };
+  return { color:'#3498db', bg:'rgba(220,235,255,0.75)', border:'rgba(52,152,219,0.25)', icon:'❄️', title:'Too cold', sub:'Below 16°C — heat the room', body:'Too cold for safe sleep. Heat the room to at least 16°C. Use a 3.5 tog sleeping bag with a long-sleeve vest and sleepsuit.', togId:4 };
+}
+
+function updateIndoor() {
+  const temp = +document.getElementById('in-slider').value;
+  const zone = getIndoorZone(temp);
+
+  document.getElementById('in-temp-num').textContent  = temp;
+  document.getElementById('in-temp-num').style.color  = zone.color;
+  document.getElementById('in-temp-unit').style.color = zone.color;
+  document.getElementById('in-heading-em').style.color = zone.color;
+
+  setSliderColor(document.getElementById('in-slider'), zone.color);
+
+  const panel = document.getElementById('in-status');
+  panel.style.background  = zone.bg;
+  panel.style.borderColor = zone.border;
+  document.getElementById('in-icon').textContent  = zone.icon;
+  document.getElementById('in-title').textContent = zone.title;
+  document.getElementById('in-sub').textContent   = zone.sub;
+  document.getElementById('in-body').textContent  = zone.body;
+
+  for (let i = 1; i <= 4; i++) {
+    const active = zone.togId === i;
+    const badge  = document.getElementById('tog-' + i);
+    const label  = document.getElementById('tog-label-' + i);
+    const check  = document.getElementById('tog-check-' + i);
+    badge.style.background = active ? TOG_COLORS[i] : 'rgba(190,215,245,0.2)';
+    badge.style.color      = active ? 'white' : 'var(--muted)';
+    label.className = 'tog-label' + (active ? ' active' : '');
+    check.textContent = active ? '👈' : '';
+  }
+}
+
+// ── Init ─────────────────────────────────────────────
+updateOutdoor();
+updateIndoor();
+
+// ── Service worker ───────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
+</script>
+</body>
+</html>
