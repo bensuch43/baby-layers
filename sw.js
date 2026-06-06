@@ -1,4 +1,4 @@
-const CACHE = 'babylayers-v1';
+const CACHE = 'babylayers-v2';
 const ASSETS = [
   '/',
   '/index.html',
